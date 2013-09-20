@@ -1,3 +1,6 @@
+"
+A MDBCursor provides access to MDB_cursor related functionality.
+"
 Class {
 	#name : #MDBCursor,
 	#superclass : #MDBHandle,
@@ -71,14 +74,14 @@ MDBCursor >> keysAndDataDo: aTwoArgBlock [
 		ifFalse: [ self mdbError: result ]
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #primitives }
 MDBCursor >> primClose [
 	<primitive: #primitiveNativeCall module: #NativeBoostPlugin error: errorCode>
 	
 	^ self nbCall: #( void mdb_cursor_close ( MDBCursor self ) )
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #primitives }
 MDBCursor >> primGet: aKey data: aValue operation: anOp [
 	<primitive: #primitiveNativeCall module: #NativeBoostPlugin error: errorCode>
 	

@@ -1,3 +1,6 @@
+"
+A MDBEnvironemnt provides access to MDB_env related functionality.
+"
 Class {
 	#name : #MDBEnvironment,
 	#superclass : #MDBHandle,

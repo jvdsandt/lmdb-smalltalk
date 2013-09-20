@@ -1,3 +1,6 @@
+"
+A MDBTransaction provides access to MDB_txn related functionality.
+"
 Class {
 	#name : #MDBTransaction,
 	#superclass : #MDBHandle,
@@ -48,6 +51,49 @@ MDBTransaction >> commit [
 	| result |
 	
 	result := self primCommit.
+	result = 0
+		ifFalse: [ self mdbError: result ]
+]
+
+{ #category : #'public-updating' }
+MDBTransaction >> delete: aKey data: aValue database: aDbi ifNotFound: aBlock [
+
+	| mdbKey mdbData result |
+	
+	mdbKey := MDBValue allocateFor: aKey.
+	mdbData := aValue isNil
+		ifTrue: [ nil ]
+		ifFalse: [ MDBValue allocateFor: aValue ].
+		
+	result := self primDel: aDbi key: mdbKey data: mdbData.
+	mdbData notNil 
+		ifTrue: [ mdbData freeData ].
+	mdbKey freeData.
+
+	result = MDB_NOTFOUND
+		ifTrue: [ ^aBlock value ].
+	result = 0
+		ifFalse: [ self mdbError: result ]
+]
+
+{ #category : #'public-updating' }
+MDBTransaction >> delete: aKey database: aDbi [
+
+	self delete: aKey database: aDbi ifNotFound: [ self errorKeyNotFound: aKey ]
+]
+
+{ #category : #'public-updating' }
+MDBTransaction >> delete: aKey database: aDbi ifNotFound: aBlock [
+
+	| mdbKey result |
+	
+	mdbKey := MDBValue allocateFor: aKey.
+		
+	result := self primDel: aDbi key: mdbKey.
+	mdbKey freeData.
+
+	result = MDB_NOTFOUND
+		ifTrue: [ ^aBlock value ].
 	result = 0
 		ifFalse: [ self mdbError: result ]
 ]
@@ -127,6 +173,16 @@ MDBTransaction >> openDatabase: aName [
 	The database handle will be private to the current transaction until the transaction is successfully committed. 
 	If the transaction is aborted the handle will be closed automatically."
 
+	^self openDatabase: aName flags: MDB_CREATE
+]
+
+{ #category : #public }
+MDBTransaction >> openDatabase: aName flags: anInteger [
+	"Answer a handle to a database/table names <aName> in this database. If <aName> is nil the default
+	database will be opened.
+	The database handle will be private to the current transaction until the transaction is successfully committed. 
+	If the transaction is aborted the handle will be closed automatically."
+
 	| buf bufName result |
 	
 	buf := ByteArray new: 4.
@@ -134,7 +190,7 @@ MDBTransaction >> openDatabase: aName [
 		ifTrue: [ nil ]
 		ifFalse: [ NBExternalAddress fromString: aName ].
 	
-	result := self primDbiOpen: bufName flags: MDB_CREATE dbi: buf. 
+	result := self primDbiOpen: bufName flags: anInteger dbi: buf. 
 	bufName notNil 
 		ifTrue: [ bufName free ].
 	result = 0
@@ -166,10 +222,17 @@ MDBTransaction >> primDbiOpen: aName flags: aFlagsInt dbi: aMDBDbiPointer [
 ]
 
 { #category : #primitives }
+MDBTransaction >> primDel: aDbiHandle key: aKey [
+	<primitive: #primitiveNativeCall module: #NativeBoostPlugin error: errorCode>
+	
+	^ self nbCall: #( int mdb_del ( MDBTransaction self, MDB_dbi aDbiHandle, MDBValue *aKey, nil ) )
+]
+
+{ #category : #primitives }
 MDBTransaction >> primDel: aDbiHandle key: aKey data: aValue [
 	<primitive: #primitiveNativeCall module: #NativeBoostPlugin error: errorCode>
 	
-	^ self nbCall: #( int mdb_del ( MDBTransaction self, MDB_dbi aDbiHandle, MDB_val *key, MDB_val *value ) )
+	^ self nbCall: #( int mdb_del ( MDBTransaction self, MDB_dbi aDbiHandle, MDBValue *aKey, MDBValue *aValue ) )
 		options: #( optCoerceNilToNull ) 
 ]
 
