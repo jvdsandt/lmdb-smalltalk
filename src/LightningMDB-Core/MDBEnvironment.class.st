@@ -51,6 +51,12 @@ MDBEnvironment class >> open: aPath flags: aFlagsInt mode: aModeInt [
 
 ]
 
+{ #category : #'instance creation' }
+MDBEnvironment class >> openReadonly: aPath [
+
+	^self open: aPath flags: MDB_RDONLY
+]
+
 { #category : #primitives }
 MDBEnvironment class >> primClose: aHandle [
 	<primitive: #primitiveNativeCall module: #NativeBoostPlugin error: errorCode>
@@ -99,19 +105,41 @@ MDBEnvironment >> close [
 	self handle: 0
 ]
 
+{ #category : #'as yet unclassified' }
+MDBEnvironment >> flags [
+
+	| buf |
+	
+	buf := ByteArray new: 4.
+	self primGetFlags: buf.
+	^buf nbUInt32AtOffset: 0
+]
+
+{ #category : #'as yet unclassified' }
+MDBEnvironment >> isReadonly [
+
+	^(self flags bitAnd: MDB_RDONLY) ~= 0
+]
+
 { #category : #primitives }
 MDBEnvironment >> maxkeysize [
 
 	^self primGetMaxkeysize
 ]
 
-{ #category : #'instance creation' }
+{ #category : #opening }
 MDBEnvironment >> open: aPath [
 
-	self open: aPath flags: 0 mode: 8r664
+	self open: aPath flags: 0
 ]
 
-{ #category : #'instance creation' }
+{ #category : #opening }
+MDBEnvironment >> open: aPath flags: aFlagsInt [
+
+	self open: aPath flags: aFlagsInt mode: 8r664
+]
+
+{ #category : #opening }
 MDBEnvironment >> open: aPath flags: aFlagsInt mode: aModeInt [
 
 	| result buf |
@@ -136,6 +164,13 @@ MDBEnvironment >> primDbiClose: aMDBDbi [
 	<primitive: #primitiveNativeCall module: #NativeBoostPlugin error: errorCode>
 	
 	^ self nbCall: #( void mdb_dbi_close ( MDBEnvironment self, MDB_dbi aMDBDbi ) )
+]
+
+{ #category : #primitives }
+MDBEnvironment >> primGetFlags: aBuffer [
+	<primitive: #primitiveNativeCall module: #NativeBoostPlugin error: errorCode>
+	
+	^ self nbCall: #( int mdb_env_get_flags( MDBEnvironment self, uint* aBuffer ) )
 ]
 
 { #category : #primitives }
