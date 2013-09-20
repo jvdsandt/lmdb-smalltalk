@@ -1,6 +1,6 @@
 Class {
 	#name : #MDBCursorTest,
-	#superclass : #TestCase,
+	#superclass : #MDBTest,
 	#instVars : [
 		'environment'
 	],
@@ -43,22 +43,6 @@ MDBCursorTest >> createTestData: aTransaction dbi: aDbiHandle [
 MDBCursorTest >> environment [
 
 	^environment ifNil: [ environment := self createEnvironment ]
-]
-
-{ #category : #accessing }
-MDBCursorTest >> path [
-
-	^ '/Users/jvdsandt/Stuff/cursortestdb'
-]
-
-{ #category : #running }
-MDBCursorTest >> setUp [
-
-	| ref |
-
-	ref := FileSystem disk referenceTo: self path.
-	ref isDirectory
-		ifFalse: [ ref createDirectory ]
 ]
 
 { #category : #running }
