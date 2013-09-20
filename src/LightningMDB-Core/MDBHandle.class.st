@@ -10,32 +10,32 @@ Class {
 	#category : #'LightningMDB-Core'
 }
 
-{ #category : #'as yet unclassified' }
+{ #category : #internal }
 MDBHandle class >> mdbError: anInteger [
 
 	self error: 'MDB Error: ', (self strerror: anInteger)
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #resources }
 MDBHandle class >> nbLibraryNameOrHandle [
 
-	^'/usr/local/Cellar/lmdb/2.4.35/lib/liblmdb.dylib'
+	^NativeBoost forCurrentPlatform lightningMDBModule
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #internal }
 MDBHandle class >> strerror: err [
 	<primitive: #primitiveNativeCall module: #NativeBoostPlugin>
 	
 	^ self nbCall: #( String mdb_strerror (int err ) ) 
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #internal }
 MDBHandle >> mdbError: anInteger [
 
 	self class mdbError: anInteger
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #resources }
 MDBHandle >> nbLibraryNameOrHandle [
 
 	^self class nbLibraryNameOrHandle 
