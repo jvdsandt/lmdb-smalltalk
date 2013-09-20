@@ -39,6 +39,18 @@ MDBSortedDictionaryTest >> testAddAll [
 ]
 
 { #category : #tests }
+MDBSortedDictionaryTest >> testAtIfAbsentPut [
+
+	dictionary := MDBSortedDictionary open: 'db1' in: self path.
+	dictionary empty.
+		
+	dictionary at: 'key-A' put: 'value-A'.
+	self assert: (dictionary at: 'key-A' ifAbsentPut: [ 'X' ]) = 'value-A'.
+	self assert: (dictionary at: 'key-B' ifAbsentPut: [ 'X' ]) = 'X'.
+	self assert: (dictionary at: 'key-B') = 'X'.
+]
+
+{ #category : #tests }
 MDBSortedDictionaryTest >> testAtIfPresent [
 
 	| value |
@@ -116,6 +128,28 @@ MDBSortedDictionaryTest >> testKeysAndValues [
 
 	self assert: dictionary keys asArray = #( 'key-A' 'key-B' ).
 	self assert: dictionary values asArray = #( 'value-A' 'value-B' ).
+]
+
+{ #category : #tests }
+MDBSortedDictionaryTest >> testReadonly [
+
+	| readDictionary |
+
+	dictionary := MDBSortedDictionary open: 'db1' in: self path.
+	self deny: dictionary isReadonly.
+	dictionary empty.
+	
+	dictionary addAll: (Dictionary new 
+		at: 'key-A' put: 'value-A' ;
+		at: 'key-B' put: 'value-B' ;
+		yourself ).
+
+	readDictionary := MDBSortedDictionary openReadonly: 'db1' in: self path.
+	self assert: dictionary isReadonly.
+
+	self assert: (readDictionary at: 'key-A') = 'value-A'.
+	self assert: (readDictionary at: 'key-B') = 'value-B'.
+	self should: [ readDictionary at: 'key-A' put: 'newValue' ] raise: Error
 ]
 
 { #category : #tests }
