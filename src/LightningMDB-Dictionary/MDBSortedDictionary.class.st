@@ -5,20 +5,53 @@ Class {
 		'environment',
 		'dbi',
 		'databaseName',
-		'valueSerializer',
-		'valueMaterializer'
+		'keyConverter',
+		'valueConverter'
 	],
 	#category : #'LightningMDB-Dictionary'
 }
 
+{ #category : #defaults }
+MDBSortedDictionary class >> defaultKeyConverter [
+
+	^MDBByteStringConverter new
+]
+
+{ #category : #defaults }
+MDBSortedDictionary class >> defaultValueConverter [
+
+	^MDBFuelConverter new
+]
+
 { #category : #'instance creation' }
 MDBSortedDictionary class >> open: aDatabaseName environment: anEnvironment [
 
-	^self basicNew initializeEnvironment: anEnvironment databaseName: aDatabaseName
+	^self open: aDatabaseName 
+		environment: anEnvironment 
+		keyConverter: self defaultKeyConverter 
+		valueConverter: self defaultValueConverter
+]
+
+{ #category : #'instance creation' }
+MDBSortedDictionary class >> open: aDatabaseName environment: anEnvironment keyConverter: aKeyConverter valueConverter: aValueConverter [
+
+	^self basicNew initializeEnvironment: anEnvironment 
+		databaseName: aDatabaseName
+		keyConverter: aKeyConverter
+		valueConverter: aValueConverter
 ]
 
 { #category : #'instance creation' }
 MDBSortedDictionary class >> open: aDatabaseName in: aPath [
+
+	^self open: aDatabaseName
+		in: aPath
+		keyConverter: self defaultKeyConverter
+		valueConverter: self defaultValueConverter
+]
+
+{ #category : #'instance creation' }
+MDBSortedDictionary class >> open: aDatabaseName in: aPath keyConverter: aKeyConverter valueConverter: aValueConverter [
 
 	| ref |
 
@@ -26,12 +59,33 @@ MDBSortedDictionary class >> open: aDatabaseName in: aPath [
 	ref isDirectory
 		ifFalse: [ ref createDirectory ].
 		
-	^self open: aDatabaseName environment: (
-		MDBEnvironment create
-			setMaxdbs: 1;
-			setMapsize: 100 * 1024 * 4096; 
-			open: ref asAbsolute pathString ;
-			yourself)
+	^self open: aDatabaseName 
+		environment: (
+			MDBEnvironment create
+				setMaxdbs: 1;
+				setMapsize: 100 * 1024 * 4096; 
+				open: ref asAbsolute pathString ;
+				yourself)
+		keyConverter: aKeyConverter 
+		valueConverter: aValueConverter
+]
+
+{ #category : #'as yet unclassified' }
+MDBSortedDictionary >> addAll: aKeyedCollection [
+
+	| writeTransaction |
+
+	aKeyedCollection == self 
+		ifFalse: [
+			writeTransaction := environment beginTransaction.
+			aKeyedCollection keysAndValuesDo: [ :key :value | 
+				writeTransaction 
+					put: (keyConverter serialize: key) 
+					data: (valueConverter serialize: value)
+					database: dbi ].
+			writeTransaction commit ].
+
+	^aKeyedCollection
 ]
 
 { #category : #'as yet unclassified' }
@@ -49,12 +103,12 @@ MDBSortedDictionary >> at: key ifAbsent: aBlock [
 	| tx valueData |
 	
 	tx := self getReadTransaction.
-	valueData := tx getData: (self keyDataFromObject: key) database: dbi ifNotFound: [ 
+	valueData := tx getData: (keyConverter serialize: key) database: dbi ifNotFound: [ 
 		self releaseReadTransaction: tx.
 		^aBlock value ].
 	self releaseReadTransaction: tx.
 
-	^self valueDataAsObject: valueData
+	^valueConverter deserialize: valueData
 ]
 
 { #category : #'as yet unclassified' }
@@ -69,12 +123,10 @@ MDBSortedDictionary >> at: key put: anObject [
 	"Set the value at key to be anObject.  If key is not found, create a
 	new entry for key and set is value to anObject. Answer anObject."
 
-	| writeTransaction valueData |
+	| writeTransaction |
 	
-	valueData := self valueDataFromObject: anObject.
-
 	writeTransaction := environment beginTransaction.
-	writeTransaction put: (self keyDataFromObject: key) data: valueData database: dbi.
+	writeTransaction put: (keyConverter serialize: key) data: (valueConverter serialize: anObject) database: dbi.
 	writeTransaction commit
 ]
 
@@ -95,12 +147,6 @@ MDBSortedDictionary >> environment [
 	^environment
 ]
 
-{ #category : #'as yet unclassified' }
-MDBSortedDictionary >> getBuffer: minByteSize [
-
-	^ByteArray new: minByteSize
-]
-
 { #category : #private }
 MDBSortedDictionary >> getReadTransaction [
 
@@ -108,7 +154,7 @@ MDBSortedDictionary >> getReadTransaction [
 ]
 
 { #category : #'initialize-release' }
-MDBSortedDictionary >> initializeEnvironment: anEnvironment databaseName: aStringOrNil [
+MDBSortedDictionary >> initializeEnvironment: anEnvironment databaseName: aStringOrNil keyConverter: aKeyConverter valueConverter: aValueConterter [
 
 	| writeTransaction |
 
@@ -118,6 +164,9 @@ MDBSortedDictionary >> initializeEnvironment: anEnvironment databaseName: aStrin
 	writeTransaction := anEnvironment beginTransaction.
 	dbi := writeTransaction openDatabase: databaseName.
 	writeTransaction commit.
+	
+	keyConverter := aKeyConverter.
+	valueConverter := aValueConterter
 ]
 
 { #category : #'as yet unclassified' }
@@ -132,20 +181,6 @@ MDBSortedDictionary >> isEmpty [
 			cursor close.
 			self releaseReadTransaction: tx ].
 	^true
-]
-
-{ #category : #serialization }
-MDBSortedDictionary >> keyDataAsObject: aValueData [
-	"Convert the key bytes to a key object"
-
-	^aValueData dataAsByteString
-]
-
-{ #category : #serialization }
-MDBSortedDictionary >> keyDataFromObject: anObject [
-	"Convert the key <anObject> to some ByteArray like object."
-
-	^anObject
 ]
 
 { #category : #'as yet unclassified' }
@@ -169,8 +204,8 @@ MDBSortedDictionary >> keysAndValuesDo: aBlock [
 	cursor := tx openCursor: dbi.
 	cursor keysAndDataDo: [ :keyValue :dataValue |
 		aBlock 
-			value: (self keyDataAsObject: keyValue)
-			value: (self valueDataAsObject: dataValue) ].
+			value: (keyConverter deserialize: keyValue)
+			value: (valueConverter deserialize: dataValue) ].
 	cursor close.
 	self releaseReadTransaction: tx
 ]
@@ -184,7 +219,7 @@ MDBSortedDictionary >> keysDo: aBlock [
 	tx := self getReadTransaction.
 	cursor := tx openCursor: dbi.
 	cursor keysAndDataDo: [ :keyValue :dataValue |
-		aBlock value: (self keyDataAsObject: keyValue) ].
+		aBlock value: (keyConverter deserialize: keyValue) ].
 	cursor close.
 	self releaseReadTransaction: tx
 ]
@@ -205,10 +240,30 @@ MDBSortedDictionary >> releaseReadTransaction: aTransaction [
 ]
 
 { #category : #'as yet unclassified' }
+MDBSortedDictionary >> removeKey: key [
+	"Remove key from the receiver.
+	If key is not in the receiver, notify an error."
+
+	^self removeKey: key ifAbsent: [ self errorKeyNotFound: key ]
+]
+
+{ #category : #'as yet unclassified' }
 MDBSortedDictionary >> removeKey: key ifAbsent: aBlock [ 
 	"Remove key (and its associated value) from the receiver. If key is not in 
 	the receiver, answer the result of evaluating aBlock. Otherwise, answer 
 	the value externally named by key."
+	
+	| keyData valueData transaction |
+	
+	keyData := keyConverter serialize: key.
+	
+	transaction := environment beginTransaction.
+	valueData := transaction getData: keyData database: dbi ifNotFound: [ 
+		transaction abort.
+		^aBlock value ].
+	transaction delete: keyData database: dbi.
+	transaction commit.
+	^valueConverter deserialize: valueData
 
 
 ]
@@ -225,43 +280,6 @@ MDBSortedDictionary >> size [
 	cursor close.
 	self releaseReadTransaction: tx.
 	^size
-]
-
-{ #category : #serialization }
-MDBSortedDictionary >> valueDataAsObject: aValueData [
-
-	| buf |
-	
-	buf := self getBuffer: aValueData mvSize.
-	aValueData copyDataTo: buf.
-	^(self valueMaterializer materializeFrom: buf readStream) root
-]
-
-{ #category : #serialization }
-MDBSortedDictionary >> valueDataFromObject: anObject [
-
-	^ByteArray streamContents: [ :stream |
-		self valueSerializer serialize: anObject on: stream ]
-]
-
-{ #category : #accessing }
-MDBSortedDictionary >> valueMaterializer [
-	^ valueMaterializer ifNil: [ valueMaterializer := FLMaterializer new ]
-]
-
-{ #category : #'initialize-release' }
-MDBSortedDictionary >> valueMaterializer: anObject [
-	^ valueMaterializer := anObject
-]
-
-{ #category : #accessing }
-MDBSortedDictionary >> valueSerializer [
-	^ valueSerializer ifNil: [ valueSerializer := FLSerializer new ]
-]
-
-{ #category : #'initialize-release' }
-MDBSortedDictionary >> valueSerializer: anObject [
-	valueSerializer := anObject
 ]
 
 { #category : #'as yet unclassified' }
@@ -284,7 +302,7 @@ MDBSortedDictionary >> valuesDo: aBlock [
 	tx := self getReadTransaction.
 	cursor := tx openCursor: dbi.
 	cursor keysAndDataDo: [ :keyValue :dataValue |
-		aBlock value: (self valueDataAsObject: dataValue) ].
+		aBlock value: (valueConverter deserialize: dataValue) ].
 	cursor close.
 	self releaseReadTransaction: tx
 ]
