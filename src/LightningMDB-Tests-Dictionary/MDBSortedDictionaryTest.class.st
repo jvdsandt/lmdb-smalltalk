@@ -7,7 +7,7 @@ Class {
 	#category : #'LightningMDB-Tests-Dictionary'
 }
 
-{ #category : #'as yet unclassified' }
+{ #category : #accessing }
 MDBSortedDictionaryTest >> path [
 
 	^self class name asString
@@ -23,6 +23,35 @@ MDBSortedDictionaryTest >> tearDown [
 ]
 
 { #category : #tests }
+MDBSortedDictionaryTest >> testAddAll [
+
+	dictionary := MDBSortedDictionary open: 'db1' in: self path.
+	dictionary empty.
+	
+	dictionary addAll: (Dictionary new 
+		at: 'key-A' put: 'value-A' ;
+		at: 'key-B' put: 'value-B' ;
+		yourself ).
+
+	self assert: (dictionary at: 'key-A') = 'value-A'.
+	self assert: (dictionary at: 'key-B') = 'value-B'.
+	self assert: dictionary size = 2.
+]
+
+{ #category : #tests }
+MDBSortedDictionaryTest >> testAtIfPresent [
+
+	| value |
+	
+	dictionary := MDBSortedDictionary open: 'db1' in: self path.
+	dictionary at: 'key-A' put: 'value-A'.
+
+	value := nil.
+	dictionary at: 'key-A' ifPresent: [ :v | value := v ].
+	self assert: value = 'value-A'
+]
+
+{ #category : #tests }
 MDBSortedDictionaryTest >> testAtPut [
 
 	| value |
@@ -35,9 +64,6 @@ MDBSortedDictionaryTest >> testAtPut [
 	value := Array with: Date today with: (Set with: 543 with: 123 / 456).
 	dictionary at: 'key-B' put: value.
 	self assert: (dictionary at: 'key-B') = value.
-	
-	dictionary environment stat inspect
-	
 ]
 
 { #category : #tests }
@@ -77,8 +103,6 @@ MDBSortedDictionaryTest >> testEmptyAndSize [
 	dictionary empty.
 	self assert: dictionary isEmpty.
 	self assert: dictionary size = 0.
-	
-
 ]
 
 { #category : #tests }
@@ -92,4 +116,16 @@ MDBSortedDictionaryTest >> testKeysAndValues [
 
 	self assert: dictionary keys asArray = #( 'key-A' 'key-B' ).
 	self assert: dictionary values asArray = #( 'value-A' 'value-B' ).
+]
+
+{ #category : #tests }
+MDBSortedDictionaryTest >> testRemove [
+
+	dictionary := MDBSortedDictionary open: 'db1' in: self path.
+	
+	dictionary at: 'key-A' put: 'value-A'.
+
+	self assert: (dictionary removeKey: 'key-X' ifAbsent: [ nil ]) isNil.
+	self assert: (dictionary removeKey: 'key-A') = 'value-A'.
+	self assert: (dictionary at: 'key-A' ifAbsent: [ nil ]) isNil
 ]
