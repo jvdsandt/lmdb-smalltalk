@@ -4,6 +4,9 @@ A MDBEnvironemnt provides access to MDB_env related functionality.
 Class {
 	#name : #MDBEnvironment,
 	#superclass : #MDBHandle,
+	#instVars : [
+		'resourceData'
+	],
 	#category : #'LightningMDB-Core'
 }
 
@@ -21,15 +24,10 @@ MDBEnvironment class >> create [
 	^instance
 ]
 
-{ #category : #'as yet unclassified' }
-MDBEnvironment class >> finalizeResourceData: aHandle [
+{ #category : #cleanup }
+MDBEnvironment class >> finalizeResourceData: aResourceData [
 
-	Transcript cr;show: 'Fin....';cr.
-
-	aHandle isNull
-		ifFalse: [ 
-			self primClose: aHandle value. 
-			aHandle value: 0 ]
+	aResourceData cleanup
 ]
 
 { #category : #'instance creation' }
@@ -61,7 +59,7 @@ MDBEnvironment class >> openReadonly: aPath [
 MDBEnvironment class >> primClose: aHandle [
 	<primitive: #primitiveNativeCall module: #NativeBoostPlugin error: errorCode>
 	
-	^ self nbCall: #( int mdb_env_close ( void* aHandle ) )
+	^ self nbCall: #( int mdb_env_close ( NBExternalObject aHandle ) )
 ]
 
 { #category : #primitives }
@@ -211,7 +209,7 @@ MDBEnvironment >> primStat: aMDBStat [
 { #category : #'initialize-release' }
 MDBEnvironment >> resourceData [
 
-	^handle
+	^resourceData ifNil: [ resourceData := MDBEnvironmentResourceData new initWithHandle: handle ]
 ]
 
 { #category : #'as yet unclassified' }

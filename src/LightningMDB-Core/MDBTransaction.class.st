@@ -7,7 +7,7 @@ Class {
 	#category : #'LightningMDB-Core'
 }
 
-{ #category : #'as yet unclassified' }
+{ #category : #'instance creation' }
 MDBTransaction class >> begin: aMDBEnvironment parent: aParentTransactionOrNil flags: aFlagsInt [
 
 	| instance result |

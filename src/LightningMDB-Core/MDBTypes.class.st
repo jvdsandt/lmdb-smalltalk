@@ -6,12 +6,16 @@ Class {
 	#superclass : #SharedPool,
 	#classVars : [
 		'MDB_CREATE',
+		'MDB_DUPFIXED',
+		'MDB_DUPSORT',
 		'MDB_FIRST',
 		'MDB_FIRST_DUP',
 		'MDB_GET_BOTH',
 		'MDB_GET_BOTH_RANGE',
 		'MDB_GET_CURRENT',
 		'MDB_GET_MULTIPLE',
+		'MDB_INTEGERDUP',
+		'MDB_INTEGERKEY',
 		'MDB_LAST',
 		'MDB_LAST_DUP',
 		'MDB_NEXT',
@@ -23,6 +27,8 @@ Class {
 		'MDB_PREV_DUP',
 		'MDB_PREV_NODUP',
 		'MDB_RDONLY',
+		'MDB_REVERSEDUP',
+		'MDB_REVERSEKEY',
 		'MDB_SET',
 		'MDB_SET_KEY',
 		'MDB_SET_RANGE',
@@ -31,18 +37,20 @@ Class {
 	#category : #'LightningMDB-Core'
 }
 
-{ #category : #'as yet unclassified' }
+{ #category : #'class initialization' }
 MDBTypes class >> initialize [
 	"self initialize"
 	
 	MDB_dbi := #uint.
 	
-	"Translating to pointer"
-	
-	"Translating to inner classes"
-
-
+	MDB_REVERSEKEY := 16r02.
+	MDB_DUPSORT := 16r04.
+	MDB_INTEGERKEY := 16r08.
+	MDB_DUPFIXED := 16r10.
+	MDB_INTEGERDUP := 16r20.
+	MDB_REVERSEDUP := 16r40.
 	MDB_CREATE := 16r40000.
+
 	MDB_RDONLY := 16r20000.
 
 
