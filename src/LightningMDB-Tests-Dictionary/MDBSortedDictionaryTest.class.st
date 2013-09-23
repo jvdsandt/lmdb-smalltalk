@@ -143,9 +143,12 @@ MDBSortedDictionaryTest >> testReadonly [
 		at: 'key-A' put: 'value-A' ;
 		at: 'key-B' put: 'value-B' ;
 		yourself ).
+	
+	dictionary release.
+	dictionary := nil.
 
 	readDictionary := MDBSortedDictionary openReadonly: 'db1' in: self path.
-	self assert: dictionary isReadonly.
+	self assert: readDictionary isReadonly.
 
 	self assert: (readDictionary at: 'key-A') = 'value-A'.
 	self assert: (readDictionary at: 'key-B') = 'value-B'.
