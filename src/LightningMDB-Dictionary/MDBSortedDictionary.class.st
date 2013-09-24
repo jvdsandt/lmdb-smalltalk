@@ -1,3 +1,17 @@
+"
+A MDBSortedDictionary is a high level Dictionary like interface to a LDBM database. Any LDBM database with unique keys can be accessed and updated using an instance of this class.
+
+Converter objects are used to (de)serialize key and value objects to binary data. Note that the length of a serialized key is limited to 511 bytes by default.
+
+Instance Variables
+	databaseName:		<String>
+	dbi:					<Object> handle to the database/table within the environment
+	environment:		<MDBEnvironment>
+	keyConverter:		<MDBObjectConverter> converter used to (de)serialize the keys
+	valueConverter:	<MDBObjectConverter> converter used to (de)serialize the values
+
+
+"
 Class {
 	#name : #MDBSortedDictionary,
 	#superclass : #Object,
