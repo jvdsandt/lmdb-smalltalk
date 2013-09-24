@@ -84,13 +84,13 @@ MDBEnvironment class >> version [
 	^self primMDBVersion
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #actions }
 MDBEnvironment >> beginReadTransaction [
 
 	^MDBTransaction begin: self parent: nil flags: MDB_RDONLY
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #actions }
 MDBEnvironment >> beginTransaction [
 
 	^MDBTransaction begin: self parent: nil flags: 0
@@ -103,7 +103,7 @@ MDBEnvironment >> close [
 	self handle: 0
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #accessing }
 MDBEnvironment >> flags [
 
 	| buf |
@@ -113,7 +113,7 @@ MDBEnvironment >> flags [
 	^buf nbUInt32AtOffset: 0
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #testing }
 MDBEnvironment >> isReadonly [
 
 	^(self flags bitAnd: MDB_RDONLY) ~= 0
@@ -212,7 +212,7 @@ MDBEnvironment >> resourceData [
 	^resourceData ifNil: [ resourceData := MDBEnvironmentResourceData new initWithHandle: handle ]
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #'initialize-release' }
 MDBEnvironment >> setMapsize: anInteger [
 	"Set the size of the memory map to use for this environment."
 
@@ -223,7 +223,7 @@ MDBEnvironment >> setMapsize: anInteger [
 		ifFalse: [ self mdbError: result ]
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #'initialize-release' }
 MDBEnvironment >> setMaxdbs: anInteger [
 
 	| result |
@@ -233,7 +233,7 @@ MDBEnvironment >> setMaxdbs: anInteger [
 		ifFalse: [ self mdbError: result ]
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #accessing }
 MDBEnvironment >> stat [
 	"Return statistics about this MDB environment."
 
