@@ -27,3 +27,9 @@ MDBEnvironmentTest >> testOpenAndCloseEnvironment [
 	
 	env close
 ]
+
+{ #category : #tests }
+MDBEnvironmentTest >> testVersion [
+
+	self assert: MDBEnvironment version isString
+]
