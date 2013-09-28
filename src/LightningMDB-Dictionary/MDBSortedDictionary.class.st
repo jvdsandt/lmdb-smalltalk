@@ -242,9 +242,9 @@ MDBSortedDictionary >> initializeEnvironment: anEnvironment databaseName: aStrin
 	
 	environment isReadonly
 		ifTrue: [
-			transaction := self getReadTransaction.
-			[ dbi := transaction openDatabase: databaseName ]
-				ensure: [ self releaseReadTransaction: transaction ] ]
+			transaction := anEnvironment beginReadTransaction.
+			dbi := transaction openDatabase: databaseName.
+			transaction commit ]
 		ifFalse: [ 
 			transaction := anEnvironment beginTransaction.
 			dbi := transaction openDatabase: databaseName.
