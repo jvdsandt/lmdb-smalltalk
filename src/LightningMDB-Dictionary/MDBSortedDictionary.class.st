@@ -74,9 +74,9 @@ MDBSortedDictionary class >> open: aDatabaseName in: aPath flags: aFlagsInt keyC
 	| ref |
 
 	ref := FileSystem disk referenceTo: aPath.
-	ref isDirectory
-		ifFalse: [ ref createDirectory ].
-		
+	(aFlagsInt & MDB_NOSUBDIR = 0 and: [ ref exists not ])
+		ifTrue: [ ref createDirectory ].
+
 	^self open: aDatabaseName 
 		environment: (
 			MDBEnvironment create
@@ -86,6 +86,16 @@ MDBSortedDictionary class >> open: aDatabaseName in: aPath flags: aFlagsInt keyC
 				yourself)
 		keyConverter: aKeyConverter 
 		valueConverter: aValueConverter
+]
+
+{ #category : #'instance creation' }
+MDBSortedDictionary class >> open: aDatabaseName inFile: aPath [
+
+	^self open: aDatabaseName
+		in: aPath
+		flags: MDB_NOSUBDIR
+		keyConverter: self defaultKeyConverter
+		valueConverter: self defaultValueConverter
 ]
 
 { #category : #'instance creation' }
