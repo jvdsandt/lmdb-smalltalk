@@ -22,6 +22,7 @@ Class {
 		'MDB_NEXT_DUP',
 		'MDB_NEXT_MULTIPLE',
 		'MDB_NEXT_NODUP',
+		'MDB_NOSUBDIR',
 		'MDB_NOTFOUND',
 		'MDB_PREV',
 		'MDB_PREV_DUP',
@@ -51,6 +52,7 @@ MDBTypes class >> initialize [
 	MDB_REVERSEDUP := 16r40.
 	MDB_CREATE := 16r40000.
 
+	MDB_NOSUBDIR := 16r4000.
 	MDB_RDONLY := 16r20000.
 
 
