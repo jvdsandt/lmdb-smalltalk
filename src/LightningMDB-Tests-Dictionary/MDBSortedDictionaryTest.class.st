@@ -88,7 +88,7 @@ MDBSortedDictionaryTest >> testAtPutMany [
 	
 	1 to: 500 do: [ :index |
 		value := Dictionary new 
-			at: 100 put: TimeStamp now ;
+			at: 100 put: DateAndTime now ;
 			at: 101 put: 'Value-', index asString ;
 			at: 200 put: 27636.78 / index ;
 			at: 201 put: (1 / 3) ;
