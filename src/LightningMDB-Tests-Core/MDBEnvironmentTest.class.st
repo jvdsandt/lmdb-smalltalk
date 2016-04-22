@@ -12,7 +12,8 @@ MDBEnvironmentTest >> testCreateAndCloseEnvironment [
 	env := MDBEnvironment create.
 	self assert: env handle notNil.
 	
-	env close
+	env close.
+	self assert: env getHandle isNull
 ]
 
 { #category : #tests }
