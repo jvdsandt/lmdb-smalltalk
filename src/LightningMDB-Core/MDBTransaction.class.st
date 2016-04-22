@@ -183,16 +183,11 @@ MDBTransaction >> openDatabase: aName flags: anInteger [
 	The database handle will be private to the current transaction until the transaction is successfully committed. 
 	If the transaction is aborted the handle will be closed automatically."
 
-	| buf bufName result |
+	| buf result |
 	
 	buf := ByteArray new: 4.
-	bufName := aName isNil 
-		ifTrue: [ nil ]
-		ifFalse: [ NBExternalAddress fromString: aName ].
 	
-	result := self primDbiOpen: bufName flags: anInteger dbi: buf. 
-	bufName notNil 
-		ifTrue: [ bufName free ].
+	result := self primDbiOpen: aName flags: anInteger dbi: buf. 
 	result = 0
 		ifFalse: [ self mdbError: result ].
 		
@@ -217,7 +212,7 @@ MDBTransaction >> primCommit [
 MDBTransaction >> primDbiOpen: aName flags: aFlagsInt dbi: aMDBDbiPointer [
 	<primitive: #primitiveNativeCall module: #NativeBoostPlugin error: errorCode>
 	
-	^ self nbCall: #( int mdb_dbi_open ( MDBTransaction self, void* aName, uint aFlagsInt, MDB_dbi *aMDBDbiPointer ) )
+	^ self nbCall: #( int mdb_dbi_open ( MDBTransaction self, String aName, uint aFlagsInt, MDB_dbi *aMDBDbiPointer ) )
 		options: #( optCoerceNilToNull ) 
 ]
 

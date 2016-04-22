@@ -3,8 +3,7 @@ A MDBValue is a structure class for the MDB_value C structure. This structure is
 "
 Class {
 	#name : #MDBValue,
-	#superclass : #NBExternalStructure,
-	#type : #bytes,
+	#superclass : #FFIExternalStructure,
 	#category : #'LightningMDB-Core'
 }
 
@@ -13,8 +12,9 @@ MDBValue class >> allocateFor: aStringOrByteArray [
 
 	| buf |
 	
-	buf := NativeBoost allocate: aStringOrByteArray byteSize.
-	NativeBoost memCopy: aStringOrByteArray to: buf size: aStringOrByteArray byteSize.
+	buf := ExternalData fromHandle: (ExternalAddress allocate: aStringOrByteArray byteSize)
+		type: ExternalType void asPointerType.
+	LibC memCopy: aStringOrByteArray to: buf size: aStringOrByteArray byteSize.
 	^self new
 		mvSize: aStringOrByteArray byteSize ;
 		mvData: buf
@@ -32,7 +32,7 @@ MDBValue class >> fieldsDesc [
 { #category : #converting }
 MDBValue >> copyDataTo: aTargetObject [
 
-	NativeBoost memCopy: self mvData to: aTargetObject size: self mvSize
+	LibC memCopy: self mvData to: aTargetObject size: self mvSize
 ]
 
 { #category : #converting }
@@ -41,7 +41,7 @@ MDBValue >> dataAsByteArray [
 	| bytes |
 	
 	bytes := ByteArray new: self mvSize.
-	NativeBoost memCopy: self mvData to: bytes size: bytes size.
+	LibC memCopy: self mvData to: bytes size: bytes size.
 	^bytes
 ]
 
@@ -51,7 +51,7 @@ MDBValue >> dataAsByteString [
 	| bytes |
 	
 	bytes := ByteString new: self mvSize.
-	NativeBoost memCopy: self mvData to: bytes size: bytes size.
+	LibC memCopy: self mvData to: bytes size: bytes size.
 	^bytes
 ]
 
@@ -59,4 +59,28 @@ MDBValue >> dataAsByteString [
 MDBValue >> freeData [
 
 	self mvData free
+]
+
+{ #category : #'accessing structure variables' }
+MDBValue >> mvData [
+	"This method was automatically generated"
+	^ExternalData fromHandle: (handle pointerAt: 5) type: ExternalType void asPointerType
+]
+
+{ #category : #'accessing structure variables' }
+MDBValue >> mvData: anObject [
+	"This method was automatically generated"
+	handle pointerAt: 5 put: anObject getHandle.
+]
+
+{ #category : #'accessing structure variables' }
+MDBValue >> mvSize [
+	"This method was automatically generated"
+	^handle unsignedLongAt: 1
+]
+
+{ #category : #'accessing structure variables' }
+MDBValue >> mvSize: anObject [
+	"This method was automatically generated"
+	handle unsignedLongAt: 1 put: anObject
 ]

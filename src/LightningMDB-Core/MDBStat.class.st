@@ -3,8 +3,7 @@ A MDBStat is a structure class for the MDB_stat C structure. Used to report stat
 "
 Class {
 	#name : #MDBStat,
-	#superclass : #NBExternalStructure,
-	#type : #bytes,
+	#superclass : #FFIExternalStructure,
 	#category : #'LightningMDB-Core'
 }
 

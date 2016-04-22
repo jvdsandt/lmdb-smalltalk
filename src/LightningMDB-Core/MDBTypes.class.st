@@ -16,6 +16,7 @@ Class {
 		'MDB_GET_MULTIPLE',
 		'MDB_INTEGERDUP',
 		'MDB_INTEGERKEY',
+		'MDB_INT_HOLDER',
 		'MDB_LAST',
 		'MDB_LAST_DUP',
 		'MDB_NEXT',
@@ -41,6 +42,8 @@ Class {
 { #category : #'class initialization' }
 MDBTypes class >> initialize [
 	"self initialize"
+	
+	self initializeValueHolders.
 	
 	MDB_dbi := #uint.
 	
@@ -77,4 +80,10 @@ MDBTypes class >> initialize [
 	MDB_SET_KEY := 16.
 	MDB_SET_RANGE := 17.	
 
+]
+
+{ #category : #'class initialization' }
+MDBTypes class >> initializeValueHolders [
+
+	MDB_INT_HOLDER := FFIExternalValueHolder ofType: 'int'.
 ]

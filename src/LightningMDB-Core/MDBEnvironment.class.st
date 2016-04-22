@@ -19,7 +19,7 @@ MDBEnvironment class >> create [
 	result = 0
 		ifFalse: [ self error: '' ].
 		
-	instance registerAsExternalResource.
+	instance autoRelease.
 
 	^instance
 ]
@@ -57,31 +57,29 @@ MDBEnvironment class >> openReadonly: aPath [
 
 { #category : #primitives }
 MDBEnvironment class >> primClose: aHandle [
-	<primitive: #primitiveNativeCall module: #NativeBoostPlugin error: errorCode>
-	
-	^ self nbCall: #( int mdb_env_close ( NBExternalObject aHandle ) )
+	^ self ffiCall: #( int mdb_env_close ( void *aHandle ) )
 ]
 
 { #category : #primitives }
 MDBEnvironment class >> primCreate: aMDBEnvironment [
-	<primitive: #primitiveNativeCall module: #NativeBoostPlugin error: errorCode>
-	
-	^ self nbCall: #( int mdb_env_create ( MDBEnvironment *aMDBEnvironment ) )
+	^ self ffiCall: #( int mdb_env_create ( MDBEnvironment *aMDBEnvironment ) )
 ]
 
 { #category : #primitives }
-MDBEnvironment class >> primMDBVersion [
-	<primitive: #primitiveNativeCall module: #NativeBoostPlugin>
-	
-	^ self nbCall: #( String mdb_version (nil, nil, nil ) ) 
-		
-	"self primMDBVersion"
+MDBEnvironment class >> primMDBVersion: major minor: minor patch: patch [
+	^ self ffiCall: #( String mdb_version (MDB_INT_HOLDER major, MDB_INT_HOLDER minor, MDB_INT_HOLDER patch ) ) 
 ]
 
 { #category : #public }
 MDBEnvironment class >> version [
 
-	^self primMDBVersion
+	| major minor patch |
+	
+	major := MDB_INT_HOLDER new.
+	minor := MDB_INT_HOLDER new.
+	patch := MDB_INT_HOLDER new.
+
+	^self primMDBVersion: major minor: minor patch: patch
 ]
 
 { #category : #actions }
@@ -100,7 +98,7 @@ MDBEnvironment >> beginTransaction [
 MDBEnvironment >> close [
 
 	self primClose.
-	self handle: 0
+	self handle beNull
 ]
 
 { #category : #accessing }
@@ -119,7 +117,7 @@ MDBEnvironment >> isReadonly [
 	^(self flags bitAnd: MDB_RDONLY) ~= 0
 ]
 
-{ #category : #primitives }
+{ #category : #accessing }
 MDBEnvironment >> maxkeysize [
 
 	^self primGetMaxkeysize
@@ -140,70 +138,59 @@ MDBEnvironment >> open: aPath flags: aFlagsInt [
 { #category : #opening }
 MDBEnvironment >> open: aPath flags: aFlagsInt mode: aModeInt [
 
-	| result buf |
+	| result |
 	
-	buf := NBExternalAddress fromString: aPath.
-	
-	result := self primOpen: buf flags: aFlagsInt mode: aModeInt.
-	buf free.
+	result := self primOpen: aPath flags: aFlagsInt mode: aModeInt.
 	result = 0
 		ifFalse: [ self mdbError: result ].
 ]
 
 { #category : #primitives }
 MDBEnvironment >> primClose [
-	<primitive: #primitiveNativeCall module: #NativeBoostPlugin error: errorCode>
 	
-	^ self nbCall: #( int mdb_env_close ( MDBEnvironment self ) )
+	^ self ffiCall: #( int mdb_env_close ( MDBEnvironment self ) )
 ]
 
 { #category : #primitives }
 MDBEnvironment >> primDbiClose: aMDBDbi [
-	<primitive: #primitiveNativeCall module: #NativeBoostPlugin error: errorCode>
 	
-	^ self nbCall: #( void mdb_dbi_close ( MDBEnvironment self, MDB_dbi aMDBDbi ) )
+	^ self ffiCall: #( void mdb_dbi_close ( MDBEnvironment self, MDB_dbi aMDBDbi ) )
 ]
 
 { #category : #primitives }
 MDBEnvironment >> primGetFlags: aBuffer [
-	<primitive: #primitiveNativeCall module: #NativeBoostPlugin error: errorCode>
 	
-	^ self nbCall: #( int mdb_env_get_flags( MDBEnvironment self, uint* aBuffer ) )
+	^ self ffiCall: #( int mdb_env_get_flags( MDBEnvironment self, uint* aBuffer ) )
 ]
 
 { #category : #primitives }
 MDBEnvironment >> primGetMaxkeysize [
-	<primitive: #primitiveNativeCall module: #NativeBoostPlugin error: errorCode>
 	
-	^ self nbCall: #( int mdb_env_get_maxkeysize ( MDBEnvironment self ) )
+	^ self ffiCall: #( int mdb_env_get_maxkeysize ( MDBEnvironment self ) )
 ]
 
 { #category : #primitives }
 MDBEnvironment >> primOpen: aPath flags: aFlagsInt mode: aModeInt [
-	<primitive: #primitiveNativeCall module: #NativeBoostPlugin error: errorCode>
 	
-	^ self nbCall: #( int mdb_env_open ( MDBEnvironment self, void* aPath, uint aFlagsInt, uint aModeInt) )
+	^ self ffiCall: #( int mdb_env_open ( MDBEnvironment self, String aPath, uint aFlagsInt, uint aModeInt) )
 ]
 
 { #category : #primitives }
 MDBEnvironment >> primSetMapsize: anInteger [
-	<primitive: #primitiveNativeCall module: #NativeBoostPlugin error: errorCode>
 	
-	^ self nbCall: #( int mdb_env_set_mapsize ( MDBEnvironment self, size_t anInteger ) )
+	^ self ffiCall: #( int mdb_env_set_mapsize ( MDBEnvironment self, size_t anInteger ) )
 ]
 
 { #category : #primitives }
 MDBEnvironment >> primSetMaxdbs: anInteger [
-	<primitive: #primitiveNativeCall module: #NativeBoostPlugin error: errorCode>
 	
-	^ self nbCall: #( int mdb_env_set_maxdbs ( MDBEnvironment self, uint anInteger ) )
+	^ self ffiCall: #( int mdb_env_set_maxdbs ( MDBEnvironment self, uint anInteger ) )
 ]
 
 { #category : #primitives }
 MDBEnvironment >> primStat: aMDBStat [
-	<primitive: #primitiveNativeCall module: #NativeBoostPlugin error: errorCode>
 	
-	^ self nbCall: #( int mdb_env_stat ( MDBEnvironment self, MDBStat *aMDBStat ) )
+	^ self ffiCall: #( int mdb_env_stat ( MDBEnvironment self, MDBStat *aMDBStat ) )
 ]
 
 { #category : #'initialize-release' }

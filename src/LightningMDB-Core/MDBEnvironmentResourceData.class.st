@@ -29,8 +29,8 @@ MDBEnvironmentResourceData >> cleanup [
 
 	handle isNull
 		ifFalse: [ 
-			MDBEnvironment primClose: (NBExternalObject new handle: handle value). 
-			handle value: 0 ]
+			MDBEnvironment primClose: handle. 
+			handle beNull ]
 ]
 
 { #category : #'initialize-release' }
