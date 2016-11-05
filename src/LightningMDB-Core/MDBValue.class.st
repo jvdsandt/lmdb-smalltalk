@@ -64,23 +64,23 @@ MDBValue >> freeData [
 { #category : #'accessing structure variables' }
 MDBValue >> mvData [
 	"This method was automatically generated"
-	^ExternalData fromHandle: (handle pointerAt: 5) type: ExternalType void asPointerType
+	^ExternalData fromHandle: (handle pointerAt: 9) type: ExternalType void asPointerType
 ]
 
 { #category : #'accessing structure variables' }
 MDBValue >> mvData: anObject [
 	"This method was automatically generated"
-	handle pointerAt: 5 put: anObject getHandle.
+	handle pointerAt: 9 put: anObject getHandle.
 ]
 
 { #category : #'accessing structure variables' }
 MDBValue >> mvSize [
 	"This method was automatically generated"
-	^handle unsignedLongAt: 1
+	^handle unsignedLongLongAt: 1
 ]
 
 { #category : #'accessing structure variables' }
 MDBValue >> mvSize: anObject [
 	"This method was automatically generated"
-	handle unsignedLongAt: 1 put: anObject
+	handle unsignedLongLongAt: 1 put: anObject
 ]
