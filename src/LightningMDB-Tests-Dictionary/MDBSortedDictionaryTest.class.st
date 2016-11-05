@@ -43,11 +43,15 @@ MDBSortedDictionaryTest >> testAtIfAbsentPut [
 
 	dictionary := MDBSortedDictionary open: 'db1' in: self path.
 	dictionary empty.
-		
 	dictionary at: 'key-A' put: 'value-A'.
-	self assert: (dictionary at: 'key-A' ifAbsentPut: [ 'X' ]) = 'value-A'.
-	self assert: (dictionary at: 'key-B' ifAbsentPut: [ 'X' ]) = 'X'.
-	self assert: (dictionary at: 'key-B') = 'X'.
+
+	self
+		assert: (dictionary at: 'key-A' ifAbsentPut: [ 'X' ])
+		equals: 'value-A'.
+	self
+		assert: (dictionary at: 'key-B' ifAbsentPut: [ 'X' ])
+		equals: 'X'.
+	self assert: (dictionary at: 'key-B') equals: 'X'
 ]
 
 { #category : #tests }
@@ -60,7 +64,7 @@ MDBSortedDictionaryTest >> testAtIfPresent [
 
 	value := nil.
 	dictionary at: 'key-A' ifPresent: [ :v | value := v ].
-	self assert: value = 'value-A'
+	self assert: value equals: 'value-A'
 ]
 
 { #category : #tests }
@@ -71,11 +75,11 @@ MDBSortedDictionaryTest >> testAtPut [
 	dictionary := MDBSortedDictionary open: 'db1' in: self path.
 	
 	dictionary at: 'key-A' put: 'value-A'.
-	self assert: (dictionary at: 'key-A') = 'value-A'.
+	self assert: (dictionary at: 'key-A') equals: 'value-A'.
 	
 	value := Array with: Date today with: (Set with: 543 with: 123 / 456).
 	dictionary at: 'key-B' put: value.
-	self assert: (dictionary at: 'key-B') = value.
+	self assert: (dictionary at: 'key-B') equals: value.
 ]
 
 { #category : #tests }
@@ -150,8 +154,8 @@ MDBSortedDictionaryTest >> testReadonly [
 	readDictionary := MDBSortedDictionary openReadonly: 'db1' in: self path.
 	self assert: readDictionary isReadonly.
 
-	self assert: (readDictionary at: 'key-A') = 'value-A'.
-	self assert: (readDictionary at: 'key-B') = 'value-B'.
+	self assert: (readDictionary at: 'key-A') equals: 'value-A'.
+	self assert: (readDictionary at: 'key-B') equals: 'value-B'.
 	self should: [ readDictionary at: 'key-A' put: 'newValue' ] raise: Error
 ]
 
@@ -163,6 +167,6 @@ MDBSortedDictionaryTest >> testRemove [
 	dictionary at: 'key-A' put: 'value-A'.
 
 	self assert: (dictionary removeKey: 'key-X' ifAbsent: [ nil ]) isNil.
-	self assert: (dictionary removeKey: 'key-A') = 'value-A'.
+	self assert: (dictionary removeKey: 'key-A') equals: 'value-A'.
 	self assert: (dictionary at: 'key-A' ifAbsent: [ nil ]) isNil
 ]
