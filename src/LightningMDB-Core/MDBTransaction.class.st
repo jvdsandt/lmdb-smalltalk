@@ -89,7 +89,7 @@ MDBTransaction >> delete: aKey database: aDbi ifNotFound: aBlock [
 	
 	mdbKey := MDBValue allocateFor: aKey.
 		
-	result := self primDel: aDbi key: mdbKey.
+	result := self primDel: aDbi key: mdbKey data: nil.
 	mdbKey freeData.
 
 	result = MDB_NOTFOUND
@@ -196,81 +196,68 @@ MDBTransaction >> openDatabase: aName flags: anInteger [
 
 { #category : #primitives }
 MDBTransaction >> primAbort [
-	<primitive: #primitiveNativeCall module: #NativeBoostPlugin error: errorCode>
 	
-	^ self nbCall: #( void mdb_txn_abort ( MDBTransaction self ) )
+	^ self ffiCall: #( void mdb_txn_abort ( MDBTransaction self ) )
 ]
 
 { #category : #primitives }
 MDBTransaction >> primCommit [
-	<primitive: #primitiveNativeCall module: #NativeBoostPlugin error: errorCode>
 	
-	^ self nbCall: #( int mdb_txn_commit ( MDBTransaction self ) )
+	^ self ffiCall: #( int mdb_txn_commit ( MDBTransaction self ) )
 ]
 
 { #category : #primitives }
 MDBTransaction >> primDbiOpen: aName flags: aFlagsInt dbi: aMDBDbiPointer [
-	<primitive: #primitiveNativeCall module: #NativeBoostPlugin error: errorCode>
 	
-	^ self nbCall: #( int mdb_dbi_open ( MDBTransaction self, String aName, uint aFlagsInt, MDB_dbi *aMDBDbiPointer ) )
-		options: #( optCoerceNilToNull ) 
-]
-
-{ #category : #primitives }
-MDBTransaction >> primDel: aDbiHandle key: aKey [
-	<primitive: #primitiveNativeCall module: #NativeBoostPlugin error: errorCode>
-	
-	^ self nbCall: #( int mdb_del ( MDBTransaction self, MDB_dbi aDbiHandle, MDBValue *aKey, nil ) )
+	^ self ffiCall: #( int mdb_dbi_open ( MDBTransaction self, String aName, uint aFlagsInt, MDB_dbi *aMDBDbiPointer ) )
 ]
 
 { #category : #primitives }
 MDBTransaction >> primDel: aDbiHandle key: aKey data: aValue [
-	<primitive: #primitiveNativeCall module: #NativeBoostPlugin error: errorCode>
 	
-	^ self nbCall: #( int mdb_del ( MDBTransaction self, MDB_dbi aDbiHandle, MDBValue *aKey, MDBValue *aValue ) )
-		options: #( optCoerceNilToNull ) 
+	^ self ffiCall: #( int mdb_del ( MDBTransaction self, MDB_dbi aDbiHandle, MDBValue *aKey, MDBValue *aValue ) )
 ]
 
 { #category : #primitives }
 MDBTransaction >> primDrop: aDbiHandle type: anInteger [
-	<primitive: #primitiveNativeCall module: #NativeBoostPlugin error: errorCode>
 	
-	^ self nbCall: #( int mdb_drop ( MDBTransaction self, MDB_dbi aDbiHandle, int anInteger ) )
+	^ self ffiCall: #( int mdb_drop ( MDBTransaction self, MDB_dbi aDbiHandle, int anInteger ) )
 ]
 
 { #category : #primitives }
 MDBTransaction >> primEnvironment [
-	<primitive: #primitiveNativeCall module: #NativeBoostPlugin error: errorCode>
 	
-	^ self nbCall: #( MDBEnvironment mdb_txn_env ( MDBTransaction self ) )
+	^ self ffiCall: #( MDBEnvironment mdb_txn_env ( MDBTransaction self ) )
 ]
 
 { #category : #primitives }
 MDBTransaction >> primGet: aKey data: aValue database: aDbi [
-	<primitive: #primitiveNativeCall module: #NativeBoostPlugin error: errorCode>
 	
-	^ self nbCall: #( int mdb_get ( MDBTransaction self, MDB_dbi aDbi, MDBValue *aKey, MDBValue *aValue ) )
+	^ self ffiCall: #( int mdb_get ( MDBTransaction self, MDB_dbi aDbi, MDBValue *aKey, MDBValue *aValue ) )
 ]
 
 { #category : #primitives }
 MDBTransaction >> primPut: aDbi key: aKey data: aValue flags: aFlagsInt [
-	<primitive: #primitiveNativeCall module: #NativeBoostPlugin error: errorCode>
 	
-	^ self nbCall: #( int mdb_put ( MDBTransaction self, MDB_dbi aDbi, MDBValue *aKey, MDBValue *aValue, uint aFlagsInt ) )
+	^ self ffiCall: #( int mdb_put ( MDBTransaction self, MDB_dbi aDbi, MDBValue *aKey, MDBValue *aValue, uint aFlagsInt ) )
 ]
 
 { #category : #primitives }
 MDBTransaction >> primRenew [
-	<primitive: #primitiveNativeCall module: #NativeBoostPlugin error: errorCode>
 	
-	^ self nbCall: #( int mdb_txn_renew ( MDBTransaction self ) )
+	^ self ffiCall: #( int mdb_txn_renew ( MDBTransaction self ) )
 ]
 
 { #category : #primitives }
 MDBTransaction >> primReset [
-	<primitive: #primitiveNativeCall module: #NativeBoostPlugin error: errorCode>
 	
-	^ self nbCall: #( void mdb_txn_reset ( MDBTransaction self ) )
+	^ self ffiCall: #( void mdb_txn_reset ( MDBTransaction self ) )
+]
+
+{ #category : #primitives }
+MDBTransaction >> primStat: aDbi structure: aStat [
+	
+	^ self ffiCall: #( int mdb_stat ( MDBTransaction self, MDB_dbi aDbi, MDBStat *aStat ) )
 ]
 
 { #category : #'public-updating' }
@@ -293,4 +280,13 @@ MDBTransaction >> put: aKey data: aValue database: aDbi [
 MDBTransaction >> reset [
 
 	self primReset 
+]
+
+{ #category : #public }
+MDBTransaction >> stat: aDbi [
+
+	| stats |
+	
+	self check: (self primStat: aDbi structure: (stats := MDBStat new)).
+	^stats
 ]

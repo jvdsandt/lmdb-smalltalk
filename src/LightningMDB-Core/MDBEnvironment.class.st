@@ -145,6 +145,27 @@ MDBEnvironment >> open: aPath flags: aFlagsInt mode: aModeInt [
 		ifFalse: [ self mdbError: result ].
 ]
 
+{ #category : #actions }
+MDBEnvironment >> openDatabase: aNameOrNil [
+	"Answer a handle to a database/table names <aNameOrNil> in this database. If <aNameOrNil> is nil the default
+	database will be opened."
+
+	^ self openDatabase: aNameOrNil flags: MDB_CREATE
+]
+
+{ #category : #actions }
+MDBEnvironment >> openDatabase: aNameOrNil flags: anInteger [
+	"Answer a handle to a database/table names <aNameOrNil> in this database. If <aNameOrNil> is nil the default
+	database will be opened."
+
+	| tx dbi |
+	
+	tx := self beginTransaction.
+	dbi := tx openDatabase: aNameOrNil.
+	tx commit.
+	^ dbi
+]
+
 { #category : #primitives }
 MDBEnvironment >> primClose [
 	
@@ -222,11 +243,12 @@ MDBEnvironment >> setMaxdbs: anInteger [
 
 { #category : #accessing }
 MDBEnvironment >> stat [
-	"Return statistics about this MDB environment."
+	"Return statistics about this MDB environment.
+	Warning: calling this method before the environment is opened can cause a crash."
 
 	| struct |
 	
 	struct := MDBStat new.
-	self primStat: struct.
+	self check: (self primStat: struct).
 	^struct
 ]

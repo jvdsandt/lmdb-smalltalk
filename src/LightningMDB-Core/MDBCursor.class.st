@@ -74,18 +74,33 @@ MDBCursor >> keysAndDataDo: aTwoArgBlock [
 		ifFalse: [ self mdbError: result ]
 ]
 
+{ #category : #'as yet unclassified' }
+MDBCursor >> next [
+
+	| key data result |
+	
+	key := MDBValue new.
+	data := MDBValue new.
+	
+	result := self primGet: key data: data operation: MDB_NEXT.
+	result = 0
+		ifTrue: [ ^ key -> data ].
+	result = MDB_NOTFOUND
+		ifTrue: [ ^ nil ].
+		
+	self mdbError: result
+]
+
 { #category : #primitives }
 MDBCursor >> primClose [
-	<primitive: #primitiveNativeCall module: #NativeBoostPlugin error: errorCode>
 	
-	^ self nbCall: #( void mdb_cursor_close ( MDBCursor self ) )
+	^ self ffiCall: #( void mdb_cursor_close ( MDBCursor self ) )
 ]
 
 { #category : #primitives }
 MDBCursor >> primGet: aKey data: aValue operation: anOp [
-	<primitive: #primitiveNativeCall module: #NativeBoostPlugin error: errorCode>
 	
-	^ self nbCall: #( int mdb_cursor_get ( MDBCursor self, MDBValue *aKey, MDBValue *aValue, int anOp ) )
+	^ self ffiCall: #( int mdb_cursor_get ( MDBCursor self, MDBValue *aKey, MDBValue *aValue, int anOp ) )
 ]
 
 { #category : #'as yet unclassified' }

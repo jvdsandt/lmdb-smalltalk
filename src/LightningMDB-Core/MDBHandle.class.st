@@ -34,6 +34,13 @@ MDBHandle class >> strerror: err [
 	^ self ffiCall: #( String mdb_strerror (int err ) ) 
 ]
 
+{ #category : #internal }
+MDBHandle >> check: anInteger [
+
+	anInteger = 0
+		ifFalse: [ self mdbError: anInteger ]
+]
+
 { #category : #resources }
 MDBHandle >> ffiLibraryName [
 
