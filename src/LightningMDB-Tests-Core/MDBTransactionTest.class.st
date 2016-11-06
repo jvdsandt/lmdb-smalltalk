@@ -27,8 +27,6 @@ MDBTransactionTest >> testCursor [
 	| env tx dbi cursor data |
 	
 	env := MDBEnvironment create.
-	self assert: env handle notNil.
-	
 	env open: self path.
 	
 	tx := env beginTransaction.
@@ -48,8 +46,6 @@ MDBTransactionTest >> testDelete [
 	| env tx dbi data |
 	
 	env := MDBEnvironment create.
-	self assert: env handle notNil.
-	
 	env open: self path.
 	
 	tx := env beginTransaction.
@@ -78,8 +74,6 @@ MDBTransactionTest >> testGet [
 	| env tx dbi data |
 	
 	env := MDBEnvironment create.
-	self assert: env handle notNil.
-	
 	env open: self path.
 	
 	tx := env beginTransaction.
@@ -122,8 +116,6 @@ MDBTransactionTest >> testPut [
 	| env tx dbi data |
 	
 	env := MDBEnvironment create.
-	self assert: env handle notNil.
-	
 	env open: self path.
 	
 	tx := env beginTransaction.
@@ -136,7 +128,36 @@ MDBTransactionTest >> testPut [
 	data := tx getByteString: 'key' database: dbi.
 	tx abort.
 
-	self assert: data = 'value'.
+	self assert: data equals: 'value'.
 
+	env close
+]
+
+{ #category : #tests }
+MDBTransactionTest >> testStat [
+
+	| env tx dbi |
+	
+	env := MDBEnvironment create.
+	env open: self path.
+	
+	tx := env beginTransaction.
+	dbi := tx openDatabase: nil.
+	tx empty: dbi.
+	self assert: (tx stat: dbi) entries equals: 0.
+	tx put: 'key' data: 'value' database: dbi.
+	self assert: (tx stat: dbi) entries equals: 1.
+	tx commit.
+	
+	tx := env beginTransaction.
+	dbi := tx openDatabase: nil.
+	tx put: 'key2' data: 'value2' database: dbi.
+	self assert: (tx stat: dbi) entries equals: 2.
+	tx abort.
+	
+	tx := env beginReadTransaction.
+	self assert: (tx stat: dbi) entries equals: 1.
+	tx abort.
+	
 	env close
 ]
