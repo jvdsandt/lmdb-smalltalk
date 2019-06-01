@@ -4,6 +4,10 @@ A MDBValue is a structure class for the MDB_value C structure. This structure is
 Class {
 	#name : #MDBValue,
 	#superclass : #FFIExternalStructure,
+	#classVars : [
+		'OFFSET_MVDATA',
+		'OFFSET_MVSIZE'
+	],
 	#category : #'LightningMDB-Core'
 }
 

@@ -4,6 +4,14 @@ A MDBStat is a structure class for the MDB_stat C structure. Used to report stat
 Class {
 	#name : #MDBStat,
 	#superclass : #FFIExternalStructure,
+	#classVars : [
+		'OFFSET_BRANCHPAGES',
+		'OFFSET_DEPTH',
+		'OFFSET_ENTRIES',
+		'OFFSET_LEAFPAGES',
+		'OFFSET_OVERFLOWPAGES',
+		'OFFSET_PSIZE'
+	],
 	#category : #'LightningMDB-Core'
 }
 
