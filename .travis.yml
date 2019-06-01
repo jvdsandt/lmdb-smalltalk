@@ -6,7 +6,7 @@ os:
 
 before_install:
   - sudo apt-get update
-  - sudo apt-get install -y liblmdb0
+  - sudo apt-get install -y liblmdb-dev
 
 smalltalk:
   - Pharo64-7.0
