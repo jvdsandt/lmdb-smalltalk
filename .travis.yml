@@ -4,9 +4,11 @@ sudo: enabled
 os:
   - linux
 
+before_install:
+  - sudo apt-get update
+  - sudo apt-get install -y liblmdb0
+
 smalltalk:
   - Pharo64-7.0
 
-services:
-  - lmdb
 
