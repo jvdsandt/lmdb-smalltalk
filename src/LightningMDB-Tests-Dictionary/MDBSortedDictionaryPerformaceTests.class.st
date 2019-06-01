@@ -13,14 +13,14 @@ MDBSortedDictionaryPerformaceTests >> doDeserializeData: anArray using: aConvert
 { #category : #'as yet unclassified' }
 MDBSortedDictionaryPerformaceTests >> doSerializeData: anArray using: aConverter [
 
-	^anArray collect: [ :each | LZ4Compressor new compress: (aConverter serialize: each) ]
+	^anArray collect: [ :each | aConverter serialize: each ]
 ]
 
 { #category : #'as yet unclassified' }
 MDBSortedDictionaryPerformaceTests >> newTestDictionary: anId [
 
 	^Dictionary new 
-		at: 100 put: TimeStamp now ;
+		at: 100 put: DateAndTime now ;
 		at: 101 put: 'Value-', anId asString ;
 		at: 200 put: 27636.78 ;
 		at: 201 put: (1 / 3) ;
@@ -46,7 +46,7 @@ MDBSortedDictionaryPerformaceTests >> testSerialization [
 		cr.
 		
 	time := Time millisecondsToRun: [
-		bytesData := bytesData collect: [ :b | MDBValue allocateFor: (LZ4Compressor new uncompress: b) ].
+		bytesData := bytesData collect: [ :b | MDBValue allocateFor: b ].
 		data := self doDeserializeData: bytesData using: converter.
 		bytesData do: [ :each | each freeData ] ].
 	Transcript
