@@ -1,6 +1,6 @@
 Class {
 	#name : #BaselineOfLightningMDB,
-	#superclass : #Object,
+	#superclass : #BaselineOf,
 	#category : #BaselineOfLightningMDB
 }
 
@@ -14,7 +14,9 @@ BaselineOfLightningMDB >> baseline: spec [
 				package: 'LightningMDB-Core';
 				package: 'LightningMDB-Tests-Core' with: [ spec requires: 'LightningMDB-Core' ];
 				package: 'LightningMDB-Dictionary' with: [ spec requires: 'LightningMDB-Core' ];
-				package: 'LightningMDB-Tests-Dictionary' with: [ spec requires: 'LightningMDB-Dictioanry' ].
+				package: 'LightningMDB-Tests-Dictionary' with: [ spec requires: 'LightningMDB-Dictionary' ].
 			
-			spec group: 'default' with: #('GitFastImport') ]
+			spec 
+				group: 'default' 
+				with: #( 'LightningMDB-Core' 'LightningMDB-Tests-Core' 'LightningMDB-Dictionary' 'LightningMDB-Tests-Dictionary' ) ]
 ]
