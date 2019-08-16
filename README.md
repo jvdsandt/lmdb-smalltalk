@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/jvdsandt/lmdb-smalltalk.svg?branch=master)](https://travis-ci.org/jvdsandt/lmdb-smalltalk)
+[![Browse](https://www.cloudctrl.com/spider/button.svg)](https://www.cloudctrl.com/spider/browse/GitHub/jvdsandt/lmdb-smalltalk/commit/253ec71a9b56187e50f247d15d6032c9dd38c0c2)
 
 # lmdb-smalltalk
 LMDB binding for Pharo Smalltalk
